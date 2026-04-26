@@ -1,0 +1,20 @@
+Apr 26 00:01:01 ubuntu CRON[900]: (root) CMD (run-parts /etc/cron.daily)
+Apr 26 00:05:33 ubuntu kernel: [UFW BLOCK] IN=eth0 OUT= MAC=00:11:22:33:44:55 SRC=203.0.113.42 DST=10.0.0.1 LEN=44 PROTO=TCP DPT=22
+Apr 26 00:05:34 ubuntu kernel: [UFW BLOCK] IN=eth0 OUT= MAC=00:11:22:33:44:55 SRC=203.0.113.42 DST=10.0.0.1 LEN=44 PROTO=TCP DPT=23
+Apr 26 00:05:35 ubuntu kernel: [UFW BLOCK] IN=eth0 OUT= MAC=00:11:22:33:44:55 SRC=203.0.113.42 DST=10.0.0.1 LEN=44 PROTO=TCP DPT=80
+Apr 26 00:05:36 ubuntu kernel: [UFW BLOCK] IN=eth0 OUT= MAC=00:11:22:33:44:55 SRC=203.0.113.42 DST=10.0.0.1 LEN=44 PROTO=TCP DPT=443
+Apr 26 00:05:37 ubuntu kernel: [UFW BLOCK] IN=eth0 OUT= MAC=00:11:22:33:44:55 SRC=203.0.113.42 DST=10.0.0.1 LEN=44 PROTO=TCP DPT=3306
+Apr 26 00:05:38 ubuntu kernel: [UFW BLOCK] IN=eth0 OUT= MAC=00:11:22:33:44:55 SRC=203.0.113.42 DST=10.0.0.1 LEN=44 PROTO=TCP DPT=5432
+Apr 26 00:05:39 ubuntu kernel: [UFW BLOCK] IN=eth0 OUT= MAC=00:11:22:33:44:55 SRC=203.0.113.42 DST=10.0.0.1 LEN=44 PROTO=TCP DPT=8080
+Apr 26 01:00:02 ubuntu systemd[1]: Starting Daily apt upgrade and clean activities...
+Apr 26 02:17:45 ubuntu kernel: Out of memory: Kill process 4321 (python3) score 890 or sacrifice child
+Apr 26 02:17:45 ubuntu kernel: Killed process 4321 (python3) total-vm:2048000kB, anon-rss:1024000kB
+Apr 26 03:00:01 ubuntu CRON[1100]: (root) CMD (/usr/lib/cron/run-crons)
+Apr 26 04:22:10 ubuntu systemd[1]: nginx.service: Main process exited, code=killed, status=9/KILL
+Apr 26 04:22:10 ubuntu systemd[1]: nginx.service: Failed with result 'signal'.
+Apr 26 04:22:11 ubuntu systemd[1]: nginx.service: Scheduled restart job, restart counter is at 1.
+Apr 26 06:00:01 ubuntu rsyslogd: [origin software="rsyslogd"] restart
+Apr 26 07:45:33 ubuntu sudo[1800]: devuser : command not allowed ; TTY=pts/2 ; PWD=/etc ; USER=root ; COMMAND=/bin/cat /etc/shadow
+Apr 26 08:00:00 ubuntu CRON[2000]: (root) CMD (run-parts /etc/cron.hourly)
+Apr 26 09:10:15 ubuntu kernel: [UFW ALLOW] IN=eth0 OUT= SRC=192.168.1.101 DST=10.0.0.1 LEN=60 PROTO=TCP DPT=443
+Apr 26 10:30:00 ubuntu systemd[1]: Starting Cleanup of Temporary Directories...
