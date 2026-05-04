@@ -1,0 +1,66 @@
+# ─────────────────────────────────────────────────────────────────────────────
+#  SOC L1 Log Analysis Toolkit — Python Dependencies
+#  Install with: pip install -r requirements.txt
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── Core Data & Analysis ──────────────────────────────────────────────────────
+pandas==2.2.2               # Log data manipulation and dataframes
+numpy==1.26.4               # Numerical operations (used by pandas/matplotlib)
+matplotlib==3.8.4           # Charts and visualizations
+seaborn==0.13.2             # Statistical visualizations (heatmaps, etc.)
+
+# ── Jupyter Notebook ──────────────────────────────────────────────────────────
+jupyter==1.0.0              # Jupyter notebook server
+notebook==7.1.3             # Classic notebook interface
+ipykernel==6.29.4           # Python kernel for Jupyter
+ipywidgets==8.1.2           # Interactive widgets in notebooks
+
+# ── HTTP & API Requests ───────────────────────────────────────────────────────
+requests==2.31.0            # HTTP library for API calls
+urllib3==2.2.1              # HTTP client (used by requests)
+
+# ── Environment & Config ──────────────────────────────────────────────────────
+python-dotenv==1.0.1        # Load API keys from .env file
+
+# ── Logging Utilities ─────────────────────────────────────────────────────────
+loguru==0.7.2               # Beautiful structured logging
+
+# ── Windows Event Log Parsing ─────────────────────────────────────────────────
+python-evtx==0.7.4          # Parse Windows .evtx binary log files
+
+# ── Threat Intelligence ───────────────────────────────────────────────────────
+virustotal-python==1.0.1    # VirusTotal API v3 client
+shodan==1.31.0              # Shodan API client
+
+# ── Elasticsearch / ELK Integration ──────────────────────────────────────────
+elasticsearch==8.13.0       # Elasticsearch Python client
+elastic-transport==8.13.0   # Transport layer for elasticsearch client
+
+# ── Network & Packet Analysis ─────────────────────────────────────────────────
+scapy==2.5.0                # Packet crafting and analysis (optional)
+ipaddress==1.0.23           # IP address manipulation utilities
+
+# ── JSON & Data Formats ───────────────────────────────────────────────────────
+rich==13.7.1                # Rich terminal output (tables, colors, progress bars)
+tabulate==0.9.0             # Pretty-print tabular data in terminal
+
+# ── Date & Time ───────────────────────────────────────────────────────────────
+python-dateutil==2.9.0      # Flexible date/time parsing
+
+# ── Concurrency ───────────────────────────────────────────────────────────────
+# concurrent.futures is built-in (Python 3.2+), no install needed
+
+# ── Testing (optional but recommended) ───────────────────────────────────────
+pytest==8.1.1               # Unit testing framework
+pytest-cov==5.0.0           # Code coverage reporting
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  QUICK INSTALL (minimal — no Jupyter or testing):
+#
+#  pip install pandas matplotlib requests python-dotenv loguru \
+#              python-evtx virustotal-python shodan elasticsearch \
+#              rich tabulate python-dateutil
+#
+#  FULL INSTALL:
+#  pip install -r requirements.txt
+# ─────────────────────────────────────────────────────────────────────────────

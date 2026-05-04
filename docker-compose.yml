@@ -1,0 +1,178 @@
+version: "3.8"
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  SOC L1 Log Analysis Toolkit — Docker Compose
+#  Services: Elasticsearch, Logstash, Kibana, Filebeat, Wazuh
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+
+  # ── Elasticsearch ───────────────────────────────────────────────────────────
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.0
+    container_name: soc-elasticsearch
+    environment:
+      - node.name=soc-es-node
+      - cluster.name=soc-cluster
+      - discovery.type=single-node
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD:-changeme}
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=false
+      - xpack.license.self_generated.type=basic
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    networks:
+      - soc-net
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s -u elastic:${ELASTIC_PASSWORD:-changeme} http://localhost:9200/_cluster/health | grep -q '\"status\":\"green\\|yellow\"'"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # ── Kibana ──────────────────────────────────────────────────────────────────
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.13.0
+    container_name: soc-kibana
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=kibana_system
+      - ELASTICSEARCH_PASSWORD=${KIBANA_PASSWORD:-changeme}
+      - KIBANA_FLEET_SETUP=true
+      - xpack.security.enabled=true
+      - xpack.encryptedSavedObjects.encryptionKey=${KIBANA_ENCRYPTION_KEY:-a_very_long_random_32char_string!}
+    ports:
+      - "5601:5601"
+    networks:
+      - soc-net
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:5601/api/status | grep -q 'available'"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # ── Logstash ────────────────────────────────────────────────────────────────
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.13.0
+    container_name: soc-logstash
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_USER=elastic
+      - ELASTICSEARCH_PASSWORD=${ELASTIC_PASSWORD:-changeme}
+      - "LS_JAVA_OPTS=-Xms256m -Xmx256m"
+    volumes:
+      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
+      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+      - ./logs:/logs:ro
+    ports:
+      - "5044:5044"   # Beats input
+      - "5000:5000"   # TCP syslog
+      - "9600:9600"   # Logstash API
+    networks:
+      - soc-net
+
+  # ── Filebeat ────────────────────────────────────────────────────────────────
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:8.13.0
+    container_name: soc-filebeat
+    user: root
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      kibana:
+        condition: service_healthy
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_USER=elastic
+      - ELASTICSEARCH_PASSWORD=${ELASTIC_PASSWORD:-changeme}
+      - KIBANA_HOST=http://kibana:5601
+    volumes:
+      - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - ./logs:/logs:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - filebeatdata:/usr/share/filebeat/data
+    command: filebeat -e --strict.perms=false
+    networks:
+      - soc-net
+
+  # ── Wazuh Manager ───────────────────────────────────────────────────────────
+  wazuh-manager:
+    image: wazuh/wazuh-manager:4.7.3
+    container_name: soc-wazuh-manager
+    hostname: wazuh-manager
+    restart: unless-stopped
+    environment:
+      - INDEXER_URL=https://elasticsearch:9200
+      - INDEXER_USERNAME=elastic
+      - INDEXER_PASSWORD=${ELASTIC_PASSWORD:-changeme}
+      - FILEBEAT_SSL_VERIFICATION_MODE=none
+      - API_USERNAME=${WAZUH_API_USER:-wazuh-wui}
+      - API_PASSWORD=${WAZUH_API_PASSWORD:-MyS3cr37P450r.*-}
+    volumes:
+      - wazuh-manager-config:/var/ossec/etc
+      - wazuh-manager-logs:/var/ossec/logs
+      - wazuh-manager-queue:/var/ossec/queue
+      - ./logs:/logs:ro
+    ports:
+      - "1514:1514"       # Agent communication
+      - "1515:1515"       # Agent enrollment
+      - "514:514/udp"     # Syslog
+      - "55000:55000"     # Wazuh API
+    networks:
+      - soc-net
+
+  # ── Wazuh Dashboard (optional UI) ───────────────────────────────────────────
+  wazuh-dashboard:
+    image: wazuh/wazuh-dashboard:4.7.3
+    container_name: soc-wazuh-dashboard
+    hostname: wazuh-dashboard
+    restart: unless-stopped
+    depends_on:
+      - wazuh-manager
+      - elasticsearch
+    environment:
+      - INDEXER_USERNAME=elastic
+      - INDEXER_PASSWORD=${ELASTIC_PASSWORD:-changeme}
+      - WAZUH_API_URL=https://wazuh-manager
+      - DASHBOARD_USERNAME=${WAZUH_DASHBOARD_USER:-kibanaserver}
+      - DASHBOARD_PASSWORD=${WAZUH_DASHBOARD_PASSWORD:-kibanaserver}
+    ports:
+      - "443:5601"
+    networks:
+      - soc-net
+
+# ── Volumes ──────────────────────────────────────────────────────────────────
+volumes:
+  esdata:
+    driver: local
+  filebeatdata:
+    driver: local
+  wazuh-manager-config:
+    driver: local
+  wazuh-manager-logs:
+    driver: local
+  wazuh-manager-queue:
+    driver: local
+
+# ── Networks ─────────────────────────────────────────────────────────────────
+networks:
+  soc-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
